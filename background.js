@@ -1,3 +1,4 @@
+const lowDpiZoom = 0.5;
 const normalDpiZoom = 1;
 const highDpiZoom = 2;
 
@@ -17,7 +18,7 @@ function updateZoomLevelsForTabTo(tabId, newZoom) {
   chrome.tabs.getZoom(tabId, currentZoom => {
     console.log('current zoom factor for tab ' + tabId + ': ' + currentZoom);
     if (currentZoom != newZoom && 
-        (currentZoom == highDpiZoom || currentZoom == normalDpiZoom)) {
+        (currentZoom == highDpiZoom || currentZoom == normalDpiZoom || currentZoom == lowDpiZoom)) {
       console.log('updating to', newZoom);
 
       // This can produce errors in the console for 'chrome://' tabs,
@@ -47,7 +48,7 @@ function findScreen(window, screens) {
   for (var i = 0; i < screens.length; i++) {
     const screen = screens[i];
     if (window.left >= screen.bounds.left
-        && window.left <= screen.bounds.left + screen.bounds.width
+        && window.left < screen.bounds.left + screen.bounds.width
         && window.top >= screen.bounds.top
         && window.top <= screen.bounds.top + screen.bounds.height) {
       return screen;
@@ -61,6 +62,9 @@ function updateZoomLevelsForWindow(window, screens) {
   if (screen.bounds && screen.bounds.width > 2800) {
     console.log('HiDPI');
     updateZoomLevelsForWindowTo(window.id, highDpiZoom);
+  } else if (screen.bounds && screen.bounds.width <= 960) {
+    console.log('Low DPI');
+    updateZoomLevelsForWindowTo(window.id, lowDpiZoom);
   } else {
     console.log('Normal DPI');
     updateZoomLevelsForWindowTo(window.id, normalDpiZoom);
